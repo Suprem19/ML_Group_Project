@@ -7,17 +7,17 @@ import re
 import csv
 import time
 
-most_current_year = 2020
-starting_year = 1977
+most_current_year = 2022
+starting_year = 1980
 
 header_award_list = ['all-nba_1', 'all-nba_2', 'all-nba_3', 'all-defensive_1', 'all-defensive_2', 'all-rookie_1', 'all-rookie_2', 'all_star_game_rosters_1', 'all_star_game_rosters_2']
  
 mode = 'per_game'
-# mode = 'shooting'
+# mode = 'advanced'
 
 header_per_game = ['Year','Player','Pos','Age','Tm','G','GS','MP','FG','FGA','FG%','3P','3PA','3P%','2P','2PA','2P%','eFG%','FT','FTA','FT%','ORB','DRB','TRB','AST','STL','BLK','TOV','PF','PTS']
 header_shooting = ['Year', 'Player', 'Pos', 'Age', 'Tm', 'G', 'MP', 'FG%', 'Dist.', '2P', '0-3', '3-10', '10-16', '16-3P', '3P', '2P', '0-3', '3-10', '10-16', '16-3P', '3P', '2P', '3P', '%FGA', '#', '%3PA', '3P%', 'Att.', '#']
-
+header_advanced = ['Year', 'Player', 'Pos', 'Age', 'Tm', 'G', 'MP', 'PER', 'TS%', '3PAr', 'FTr', 'ORB%', 'DRB%', 'TRB%', 'AST%', 'STL%', 'BLK%', 'TOV%', 'USG%', 'OWS', 'DWS', 'WS', 'WS/48', 'OBPM', 'DBPM', 'BPM', 'VORP']
 
 Base_url = "https://www.basketball-reference.com/leagues/NBA_{year}_{mode}.html"
 Base_url_award = "https://www.basketball-reference.com/leagues/NBA_{year}.html"
@@ -35,7 +35,9 @@ class csv_writer:
             self.header = header_per_game + header_award_list
         if(mode == 'shooting'):
             self.header = header_shooting + header_award_list
-                    
+        if(mode == 'advanced'):
+            self.header = header_advanced + header_award_list 
+            
         # open the file in the write mode
         f= open(csv_filename, 'w', encoding='UTF8', newline='')
         self.f = f
@@ -67,7 +69,7 @@ def check_award_for_player(player_name, year, award_info_dic):
 ['all-nba_1', 'all-nba_2', 'all-nba_3', 'all-defensive_1', 'all-defensive_2', 'all-rookie_1', 'all-rookie_2', 'all_star_game_rosters_1', 'all_star_game_rosters_2']
 '''
     # print(award_info_dic)
-    print('cheking year: ', year)
+    # print('cheking year: ', year)
     award_player = ['0']*len(header_award_list)
     if player_name in award_info_dic[year]['all-nba_1']:
         award_player[0] = '1'
@@ -92,7 +94,7 @@ def check_award_for_player(player_name, year, award_info_dic):
 def get_player(f, mode):
 
     for year in range(starting_year, most_current_year + 1):
-
+        print('get player infor of year: ', year)
         phandle = urlopen(Base_url.format(year = year, mode = mode))
         p_soup = BeautifulSoup(phandle, features = "html.parser")
 
@@ -120,7 +122,17 @@ def get_player(f, mode):
                 data = player[:]
                 data.insert(0, str(year))
                 player_awards = check_award_for_player(Player_name, year, awards_sumary)
-                print(player_awards)
+                # print(player_awards)
+                data = data + player_awards
+                
+            if mode == 'advanced':
+                data = player[:]
+                #There are two entries where nothing is entered. Get rid of them.
+                data.pop(23)
+                data.pop(18)
+                data.insert(0,year)
+                player_awards = check_award_for_player(Player_name, year, awards_sumary)
+                # print(player_awards)
                 data = data + player_awards
                 
             if mode == 'shooting':
@@ -131,7 +143,10 @@ def get_player(f, mode):
                 #There are empty entries where nothing is entered. Get rid of them.
                 data[:] = [x for x in data if x]
                 data.insert(0,str(year))
-
+                player_awards = check_award_for_player(Player_name, year, awards_sumary)
+                # print(player_awards)
+                data = data + player_awards
+                
             f.write_csv(data)
         time.sleep(1)#to avoid http erro 429
 
