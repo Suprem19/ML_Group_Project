@@ -67,12 +67,13 @@ def check_award_for_player(player_name, year, award_info_dic):
 ['all-nba_1', 'all-nba_2', 'all-nba_3', 'all-defensive_1', 'all-defensive_2', 'all-rookie_1', 'all-rookie_2', 'all_star_game_rosters_1', 'all_star_game_rosters_2']
 '''
     # print(award_info_dic)
+    print('cheking year: ', year)
     award_player = ['0']*len(header_award_list)
     if player_name in award_info_dic[year]['all-nba_1']:
         award_player[0] = '1'
     if player_name in award_info_dic[year]['all-nba_2']:
         award_player[1] = '1'
-    if player_name in award_info_dic[year]['all-nba_3']:
+    if (year>= 1989) and (player_name in award_info_dic[year]['all-nba_3']):
         award_player[2] = '1'
     if player_name in award_info_dic[year]['all-defensive_1']:
         award_player[3] = '1'
@@ -80,11 +81,11 @@ def check_award_for_player(player_name, year, award_info_dic):
         award_player[4] = '1'
     if player_name in award_info_dic[year]['all-rookie_1']:
         award_player[5] = '1'
-    if player_name in award_info_dic[year]['all-rookie_2']:
+    if (year>= 1989) and (player_name in award_info_dic[year]['all-rookie_2']):
         award_player[6] = '1'
-    if player_name in award_info_dic[year]['all_star_game_rosters_1']:
+    if (year != 1999) and (player_name in award_info_dic[year]['all_star_game_rosters_1']):
         award_player[7] = '1'
-    if player_name in award_info_dic[year]['all_star_game_rosters_2']:
+    if (year != 1999) and (player_name in award_info_dic[year]['all_star_game_rosters_2']):
         award_player[8] = '1'
     return award_player
 
