@@ -76,7 +76,7 @@ def plt_cm(y_true, y_predict, model_name, labels=[-1,1]):
     disp.ax_.set_title('Confusion Matrix of %s'%model_name)
     plt.show()
   
-def knn(X_train, X_test, y_train, y_tes):
+def knn(X_train, X_test, y_train, y_test):
     for i in range(1,2):
         #Create KNN Classifier
         knn = KNeighborsClassifier(n_neighbors=i, weights='distance')
@@ -91,19 +91,18 @@ def knn(X_train, X_test, y_train, y_tes):
         print(metrics.classification_report(y_test, y_pred))
         # metrics.f1_score(y_test,y_pred)    
 
-def mlp(X_train, X_test, y_train, y_tes):
+def mlp(X_train, X_test, y_train, y_test):
     from sklearn.neural_network import MLPClassifier
 
     clf = MLPClassifier(hidden_layer_sizes=(5,2),
-                        max_iter = 1000,
-                        solver = 'adam')
+                        max_iter = 1000)
 
     clf.fit(X_train, y_train)
 
     y_pred = clf.predict(X_test)
     print(metrics.classification_report(y_test, y_pred))
 
-def rf(X_train, X_test, y_train, y_tes):
+def rf(X_train, X_test, y_train, y_test):
     #Import Random Forest Model
     from sklearn.ensemble import RandomForestClassifier
     
@@ -118,7 +117,7 @@ def rf(X_train, X_test, y_train, y_tes):
 
 '''Classification metrics can't handle a mix of multiclass and continuous targets
 '''
-def ridge(X_train, X_test, y_train, y_tes):
+def ridge(X_train, X_test, y_train, y_test):
     from sklearn.linear_model import Ridge
     # load the dataset
     # define model
@@ -160,6 +159,56 @@ def read_data(csv_file):
     y = df.iloc[:,features['class']]
     return X,y
 
+def svm(X_train, X_test, y_train, y_test):
+    import matplotlib.pyplot as plt
+    from sklearn import svm
+  
+        # fit the model and get the separating hyperplane using weighted classes
+    wclf = svm.SVC(kernel="linear", class_weight={0:1, 1:5, 2:5})
+    # wclf = svm.SVC(kernel="linear")
+    wclf.fit(X_train, y_train)
+    y_dec = wclf.decision_function(X_test)
+    y_pred = wclf.predict(X_test)
+    # print(y_pred)
+    print(metrics.classification_report(y_test, y_pred))
+
+def norm(X):
+    import pandas as pd
+    from sklearn import preprocessing
+    from sklearn.preprocessing import StandardScaler
+    min_max_scaler = preprocessing.MinMaxScaler()
+    X_sclaed = min_max_scaler.fit_transform(X)
+    # df = pd.DataFrame(x_scaled)
+    
+    # X_sclaed = StandardScaler().fit_transform(X)
+    
+    return X_sclaed
+
+def pca(X_train, X_test):
+    from sklearn.decomposition import PCA
+    pca = PCA(n_components=5)
+    X_train = pca.fit_transform(X_train)
+    X_test = pca.transform(X_test)
+    return X_train, X_test
+
+def reduce_class(y):
+    # class 0 for nothing
+    # class 1 for all-nba
+    # class 2 for all-defender
+    
+    y[y==1] = 1 #set rookie 1st to 0
+    y[y==2] = 1 #set rookie 1st to 0
+    y[y==3] = 1 #set rookie 2nd to 0
+    
+    y[y==4] = 2 #set rookie 1st to 0
+    y[y==5] = 2 #set rookie 2nd to 0
+    
+    y[y==6] = 0 #set rookie 1st to 0
+    y[y==7] = 0 #set rookie 2nd to 0
+    
+    
+    return y
+    
 if __name__ == '__main__':
     
     import warnings
@@ -167,6 +216,16 @@ if __name__ == '__main__':
 
     X_train, y_train = read_data(csv_filename_train)
     X_test, y_test = read_data(csv_filename_test)
+    
+# must do norm for svm, otherwise program stuck, why?
+    X_train = norm(X_train)
+    X_test = norm(X_test)
+    
+    # X_train, X_test = pca(X_train, X_test)
+    
+    reduce_class(y_train)
+    reduce_class(y_test)
+    
     # y1= df.iloc[:,features['all-nba_1']]
     # y2= df.iloc[:,features['all-nba_2']]
     # y3= df.iloc[:,features['all-nba_3']]
@@ -185,4 +244,7 @@ if __name__ == '__main__':
   
     print('MLP---------------------')
     mlp(X_train, X_test, y_train, y_test)
+    
+    print('SVM---------------------')
+    svm(X_train, X_test, y_train, y_test)
    
