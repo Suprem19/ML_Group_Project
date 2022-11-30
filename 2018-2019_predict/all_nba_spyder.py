@@ -8,7 +8,7 @@ import csv
 import time
 
 most_current_year = 2022
-starting_year = 1980
+starting_year = 2021
 
 header_award_list = ['all-nba_1', 'all-nba_2', 'all-nba_3', 'all-defensive_1', 'all-defensive_2', 'all-rookie_1', 'all-rookie_2', 'all_star_game_rosters_1', 'all_star_game_rosters_2']
  
@@ -91,6 +91,16 @@ def check_award_for_player(player_name, year, award_info_dic):
         award_player[8] = '1'
     return award_player
 
+def classification(award_player):
+    class_type = 0
+    if '1' in award_player:
+        index = award_player.index('1')
+        if index <7: #do not use all_star_game_roster
+            class_type = index+1
+    
+    return [str(class_type)]
+        
+        
 def get_player(f, mode):
 
     for year in range(starting_year, most_current_year + 1):
@@ -123,7 +133,7 @@ def get_player(f, mode):
                 data.insert(0, str(year))
                 player_awards = check_award_for_player(Player_name, year, awards_sumary)
                 # print(player_awards)
-                data = data + player_awards
+                data = data + player_awards + classification(player_awards)
                 
             if mode == 'advanced':
                 data = player[:]
@@ -207,11 +217,29 @@ def test_to_find_structure():
             for player in players:
                 print(player.getText())
                 
-
+def check_transifer_impact():
+    csv_filename = 'all_nba_player_{mode}.csv'.format(mode=mode)
+    with  open(csv_filename, encoding='UTF8') as f:
+        csv_reader = csv.reader(f, delimiter=',')
+        year_last_row = None
+        player_name_last_row = None
+        for row in csv_reader:
+            if(row[0] == year_last_row) and (row[1] == player_name_last_row):
+                #duplicated player
+                if '1' in row[-9:]:
+                    print(row[0], row[1], row[-9:])
+               
+            year_last_row = row[0]
+            player_name_last_row = row[1]
+            
+  
+        
 if __name__ == "__main__":
     # test_to_find_structure()
-     awards_sumary = get_awards()
-     f = csv_writer(mode)
-     get_player(f, mode)
-     f.close_csv()
+      awards_sumary = get_awards()
+      f = csv_writer(mode)
+      get_player(f, mode)
+      f.close_csv()
+     
+     # check_transifer_impact()
     
