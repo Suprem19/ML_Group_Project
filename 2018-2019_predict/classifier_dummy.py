@@ -10,6 +10,7 @@ import matplotlib.ticker as ticker
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 from sklearn.metrics import precision_recall_fscore_support
+from plotnine import *
 
 mode = 'per_game'
 
@@ -67,6 +68,8 @@ from sklearn.metrics import plot_confusion_matrix
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 
+csv_list = []
+ 
 def plt_cm(y_true, y_predict, model_name, labels=[-1,1]):
     cm = confusion_matrix(y_test, y_predict, labels=labels)
     #print(est.classes_,type(est.classes_))
@@ -133,28 +136,29 @@ def ridge(X_train, X_test, y_train, y_test):
 def read_data(csv_file):
     df = pd.read_csv(csv_file)
     #print(df.head())
-    X1=df.iloc[:,features['Age']] 
+    # X1=df.iloc[:,features['Age']] 
   
     X3=df.iloc[:,features['G']]
-    X4=df.iloc[:,features['MP']]
+    # X4=df.iloc[:,features['MP']]
     X5=df.iloc[:,features['FG']]
-    X6=df.iloc[:,features['FGA']]
+    # X6=df.iloc[:,features['FGA']]
     X7=df.iloc[:,features['3P']]
-    X8=df.iloc[:,features['3PA']]
+    # X8=df.iloc[:,features['3PA']]
     X9=df.iloc[:,features['2P']]
-    X10=df.iloc[:,features['2PA']]
+    # X10=df.iloc[:,features['2PA']]
     X11=df.iloc[:,features['FT']]
     X12=df.iloc[:,features['FTA']]
-    X13=df.iloc[:,features['ORB']]
+    # X13=df.iloc[:,features['ORB']]
     X14=df.iloc[:,features['DRB']]
     X15=df.iloc[:,features['TRB']]
     X16=df.iloc[:,features['AST']]
-    X17=df.iloc[:,features['STL']]
-    X18=df.iloc[:,features['BLK']]
-    X19=df.iloc[:,features['TOV']]
+    # X17=df.iloc[:,features['STL']]
+    # X18=df.iloc[:,features['BLK']]
+    # X19=df.iloc[:,features['TOV']]
     X20=df.iloc[:,features['PF']]
     X21=df.iloc[:,features['PTS']]
-    X = np.column_stack((X1,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13,X14,X15,X16,X17,X18,X19,X20,X21))
+    # X = np.column_stack((X1,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13,X14,X15,X16,X17,X18,X19,X20,X21))
+    X = np.column_stack((X3,X5,X7,X9,X11,X12,X14,X15,X16,X20,X21))
     
     y = df.iloc[:,features['class']]
     return X,y
@@ -164,12 +168,18 @@ def svm(X_train, X_test, y_train, y_test):
     from sklearn import svm
   
         # fit the model and get the separating hyperplane using weighted classes
-    wclf = svm.SVC(kernel="linear", class_weight={0:1, 1:5, 2:5})
+    wclf = svm.SVC(kernel="linear", probability=True, class_weight={0:1, 1:5})
     # wclf = svm.SVC(kernel="linear")
     wclf.fit(X_train, y_train)
     y_dec = wclf.decision_function(X_test)
+    y_predic_prop= wclf.predict_proba(X_test)
     y_pred = wclf.predict(X_test)
-    # print(y_pred)
+    
+ 
+    y_pred = (wclf.predict_proba(X_test)[:,1] >= 0.1148).astype(bool)
+    # y_pred = predict_post(y_predic_prop, y_pred)
+    
+ 
     print(metrics.classification_report(y_test, y_pred))
 
 def norm(X):
@@ -196,24 +206,142 @@ def reduce_class(y):
     # class 1 for all-nba
     # class 2 for all-defender
     
-    y[y==1] = 1 #set rookie 1st to 0
-    y[y==2] = 1 #set rookie 1st to 0
-    y[y==3] = 1 #set rookie 2nd to 0
+    y[y==1] = 1 #set all-nba 1st to 0
+    y[y==2] = 1 #set all-nba 2nd to 0
+    y[y==3] = 1 #set all-nba 3rd to 0
     
-    y[y==4] = 2 #set rookie 1st to 0
-    y[y==5] = 2 #set rookie 2nd to 0
+    y[y==4] = 0 #set all-defender 1st to 0
+    y[y==5] = 0 #set all-defender 2nd to 0
     
     y[y==6] = 0 #set rookie 1st to 0
     y[y==7] = 0 #set rookie 2nd to 0
     
     
     return y
+
+def read_csv(csv_filename):
+    import csv
+    with open(csv_filename, encoding='UTF8', newline='') as f:
+        csv_rd = csv.reader(f, delimiter=',')
+        for row in csv_rd:
+            csv_list.append(row)
+    f.close()
+
+#https://towardsdatascience.com/optimal-threshold-for-imbalanced-classification-5884e870c293#:~:text=ROC%20curve%20for%20finding%20the,positives%20and%20100%25%20true%20positives.
+def thres_hold_choose(X_train, X_test, y_train, y_test):
     
+    from sklearn.metrics import roc_curve                # Calculate the ROC curve
+    from sklearn.metrics import precision_recall_curve   # Calculate the Precision-Recall curve
+    from sklearn import svm
+    # Fit the model
+    wclf = svm.SVC(kernel="linear", probability=True, class_weight={0:1, 1:5})
+    wclf.fit(X_train, y_train)
+    # Predict the probabilities
+    y_pred = wclf.predict_proba(X_test)
+    # Get the probabilities for positive class
+    y_pred = y_pred[:, 1]
+
+    # Import module for data visualization
+    
+    import plotnine
+
+    # Create the ROC curve
+    fpr, tpr, thresholds = roc_curve(y_test, y_pred)
+    
+    # Plot the ROC curve
+    df_fpr_tpr = pd.DataFrame({'FPR':fpr, 'TPR':tpr, 'Threshold':thresholds})
+    print(df_fpr_tpr.head())
+    
+    # Calculate the G-mean
+    gmean = np.sqrt(tpr * (1 - fpr))
+    
+    # Find the optimal threshold
+    index = np.argmax(gmean)
+    thresholdOpt = round(thresholds[index], ndigits = 4)
+    gmeanOpt = round(gmean[index], ndigits = 4)
+    fprOpt = round(fpr[index], ndigits = 4)
+    tprOpt = round(tpr[index], ndigits = 4)
+    print('Best Threshold: {} with G-Mean: {}'.format(thresholdOpt, gmeanOpt))
+    print('FPR: {}, TPR: {}'.format(fprOpt, tprOpt))
+    
+    # Create data viz
+    plotnine.options.figure_size = (8, 4.8)
+    
+    viz = (ggplot(data = df_fpr_tpr)+
+    geom_point(aes(x = 'FPR',
+                   y = 'TPR'),
+               size = 0.4)+
+    # Best threshold
+    geom_point(aes(x = fprOpt,
+                   y = tprOpt),
+               color = '#981220',
+               size = 4)+
+    geom_line(aes(x = 'FPR',
+                  y = 'TPR'))+
+    geom_text(aes(x = fprOpt,
+                  y = tprOpt),
+              label = 'Optimal threshold \n for class: {}'.format(thresholdOpt),
+              nudge_x = 0.14,
+              nudge_y = -0.10,
+              size = 10,
+              fontstyle = 'italic')+
+    labs(title = 'ROC Curve')+
+    xlab('False Positive Rate (FPR)')+
+    ylab('True Positive Rate (TPR)')+
+    theme_minimal())
+    print(viz)
+
+
+def select_3(pred_list, pos, pred):
+    max_prob = 0
+    player = ''
+    index = 0
+    cat = []
+    for i, item in enumerate(pred_list):
+        if(item[1] == pos):
+            cat.append(item + [i])
+    cat = sorted(cat,key=lambda cat:cat[2],  reverse=True)
+    cat_3 =  cat[:4]
+    print('final reulst----------------------------------')
+    print(cat_3)
+    for r in cat_3:
+        pred[r[3]] = 1
+       
+
+
+def predict_post(pred_prop, pred):
+    all_nba_class =1
+    
+    pred_refined = np.zeros(pred.shape)
+    print(type(pred), pred.shape)
+    
+    predic_trues, = np.where(pred ==all_nba_class)
+    print(type(predic_trues), predic_trues)
+    
+    pred_list=[]
+    for i in predic_trues:
+        row = csv_list[i]
+        # print(row[features['Player']], row[features['Pos']], pred_prop[:,1][i])
+        pred_list.append([row[features['Player']], row[features['Pos']], pred_prop[:,1][i]])
+   
+    print(pred_list)
+    #1st is player, 2nd pos, 3rd propability
+    # print(pred_list[pred_list[1]=='C']) 
+    select_3(pred_list,'C', pred_refined)
+    select_3(pred_list,'PF', pred_refined) 
+    select_3(pred_list,'SG', pred_refined)
+    select_3(pred_list,'PG', pred_refined)
+    select_3(pred_list,'SG', pred_refined)
+    return pred_refined
+    
+    
+        
 if __name__ == '__main__':
     
     import warnings
     warnings.filterwarnings('ignore')  # "error", "ignore", "always", "default", "module" or "once"
 
+    read_csv(csv_filename_test)
     X_train, y_train = read_data(csv_filename_train)
     X_test, y_test = read_data(csv_filename_test)
     
@@ -232,7 +360,7 @@ if __name__ == '__main__':
     # y4= df.iloc[:,features['all-defensive_1']]
     # y5= df.iloc[:,features['all-defensive_2']]
     # y = np.column_stack((y1,y2,y3,y4,y5))
-    
+    thres_hold_choose(X_train, X_test, y_train, y_test)
  
     # convert class vectors to binary class matrices
     # y = keras.utils.to_categorical(y, num_classes)
@@ -242,9 +370,12 @@ if __name__ == '__main__':
     print('KNN---------------------')
     knn(X_train, X_test, y_train, y_test)
   
-    print('MLP---------------------')
+    # print('MLP---------------------')
     mlp(X_train, X_test, y_train, y_test)
     
     print('SVM---------------------')
     svm(X_train, X_test, y_train, y_test)
+    
+
+
    
