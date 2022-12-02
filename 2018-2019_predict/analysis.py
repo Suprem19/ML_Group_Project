@@ -259,6 +259,65 @@ def data_summary(y):
     print('size of 7 label is', y.count(7))
     
     pass
+
+def ref():
+    import numpy as np
+    import matplotlib.pyplot as plt
+      
+    N = 3
+    ind = np.arange(N) 
+    width = 0.25
+      
+    xvals = [8, 9, 2]
+    bar1 = plt.bar(ind, xvals, width, color = 'r')
+      
+    yvals = [10, 20, 30]
+    bar2 = plt.bar(ind+width, yvals, width, color='g')
+      
+    zvals = [11, 12, 13]
+    bar3 = plt.bar(ind+width*2, zvals, width, color = 'b')
+      
+    plt.xlabel("Dates")
+    plt.ylabel('Scores')
+    plt.title("Players Score")
+      
+    plt.xticks(ind+width,['2021Feb01', '2021Feb02', '2021Feb03'])
+    plt.legend( (bar1, bar2, bar3), ('Player1', 'Player2', 'Player3') )
+    plt.show()
+
+def plt_pred_summary():
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    
+    labels = ['lOGlOSS', 'Precision', 'Recall', 'F1score']
+    SVC = [0.039, 0.77, 0.57, 0.65]
+    KNN = [0.041, 0.80, 0.40, 0.53]
+    RF = [0.051, 0.71, 0.40, 0.51]
+    MLP = [0.052, 0.76, 0.43, 0.55]
+    DUMMY = [0.773, 0.00, 0.00, 0.0] 
+    
+
+    N = 4
+    ind = np.arange(N) 
+    width = 0.1
+      
+   
+    bar1 = plt.bar(ind, SVC, width, color = 'r')  
+    bar2 = plt.bar(ind+width, KNN, width, color='g')   
+    bar3 = plt.bar(ind+width*2, RF, width, color = 'b')
+    bar4 = plt.bar(ind+width*3, MLP, width, color = 'y')
+    bar5 = plt.bar(ind+width*4, DUMMY, width, color = 'c')
+    
+    plt.xlabel("merics")
+    plt.ylabel('Scores')
+    plt.title("scores by different aproches")
+      
+    plt.xticks(ind+width, labels)
+    plt.legend( (bar1, bar2, bar3, bar4, bar5), ('SVC', 'KNN', 'RF', 'MLP', 'DUMMY'),loc = 'upper left' )
+    plt.show()
+
+
     
 if __name__ == '__main__':
     import matplotlib.pyplot as plt 
@@ -289,5 +348,7 @@ if __name__ == '__main__':
     X_train = pca.fit_transform(X_train)
 
     data_vis_multiclass_pca(X_train, y_train)
+    # ref()
+    plt_pred_summary()
     
      

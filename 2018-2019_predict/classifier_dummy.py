@@ -168,7 +168,7 @@ def read_data(csv_file):
     return X,y
 
 class_weights_enabled = 1
-threshold_svm_enabled = 0
+threshold_svm_enabled = 1
 norm_svm_enabled = 1
 
 def svm(X_train, X_test, y_train, y_test, class_weight={0:1, 1:5}):
@@ -188,7 +188,7 @@ def svm(X_train, X_test, y_train, y_test, class_weight={0:1, 1:5}):
     
     
     if threshold_svm_enabled:
-        y_pred = (wclf.predict_proba(X_test)[:,1] >= 0.1284).astype(bool)
+        y_pred = (wclf.predict_proba(X_test)[:,1] >= 0.1015).astype(bool)
     # y_pred = predict_post(y_predic_prop, y_pred)
     
     m = metrics.classification_report(y_test, y_pred)
@@ -356,7 +356,7 @@ def predict_post(pred_prop, pred):
 
 def plot_weighs(a):
     plt.plot(a[:,0], a[:,1],  color='blue', linestyle='dashed', 
-         marker='o',markerfacecolor='red', label = 'accuracy')
+         marker='o',markerfacecolor='red', label = 'precision')
     plt.plot(a[:,0], a[:,2], color='blue', linestyle='dashed', 
              marker='o',markerfacecolor='green', label = 'recall')
     plt.plot(a[:,0], a[:,3], color='blue', linestyle='dashed', 
@@ -435,9 +435,9 @@ if __name__ == '__main__':
     # print('MLP---------------------')
     # mlp(X_train, X_test, y_train, y_test)
     print('SVM---------------------')
-    svm(X_train, X_test, y_train, y_test, {0:1, 1:2.45})
+    svm(X_train, X_test, y_train, y_test, {0:1, 1:2})
 
-    plot_weighs(svm_weight_try(X_train, X_test, y_train, y_test))
+    # plot_weighs(svm_weight_try(X_train, X_test, y_train, y_test))
 
 
    

@@ -16,8 +16,8 @@ mode = 'per_game'
 
 # csv_filename = 'all_nba_player_{mode}.csv'.format(mode=mode)
 
-csv_filename_train = './all_nba_player_{mode}_train.csv'.format(mode=mode)
-csv_filename_test = './all_nba_player_{mode}_test.csv'.format(mode=mode)
+csv_filename_train = '../doc/all_nba_player_{mode}_train.csv'.format(mode=mode)
+csv_filename_test = '../doc/all_nba_player_{mode}_test.csv'.format(mode=mode)
 
 features = {
     'Year': 0,
@@ -81,20 +81,20 @@ def plt_cm(y_true, y_predict, model_name, labels=[-1, 1]):
 
 
 def knn(X_train, X_test, y_train, y_test):
-    # recall = []
-    # F1 = []
-    # precision = []
-    # train_score_list = []
-    # test_score_list = []
-    # for k in range(1, 41):
-    #     knn = KNeighborsClassifier(n_neighbors=k, weights='distance')
-    #     knn.fit(X_train, y_train)
-    #     y_pred = knn.predict(X_test)
-    #     train_score_list.append(knn.score(X_train, y_train))
-    #     test_score_list.append(knn.score(X_test, y_test))
-    #     precision.append(metrics.precision_score(y_test, y_pred))
-    #     F1.append(metrics.f1_score(y_test, y_pred))
-    #     recall.append(metrics.recall_score(y_test, y_pred))
+    recall = []
+    F1 = []
+    precision = []
+    train_score_list = []
+    test_score_list = []
+    for k in range(1, 41):
+        knn = KNeighborsClassifier(n_neighbors=k, weights='distance')
+        knn.fit(X_train, y_train)
+        y_pred = knn.predict(X_test)
+        train_score_list.append(knn.score(X_train, y_train))
+        test_score_list.append(knn.score(X_test, y_test))
+        precision.append(metrics.precision_score(y_test, y_pred))
+        F1.append(metrics.f1_score(y_test, y_pred))
+        recall.append(metrics.recall_score(y_test, y_pred))
 
     # plt.plot(range(1, 41), train_score_list, label='train_score')
     # plt.plot(range(1, 41), test_score_list, label='test_score')
@@ -104,14 +104,18 @@ def knn(X_train, X_test, y_train, y_test):
     # plt.title('Performance of Different K-value on Train and Test Score')
     # plt.show()
     #
-    # plt.plot(range(1, 41), precision, label='precision')
-    # plt.plot(range(1, 41), F1, label='f1_score')
-    # plt.plot(range(1, 41), recall, label='recall')
-    # plt.xlabel('k_value')
-    # plt.ylabel('socre')
-    # plt.legend(loc='best')
-    # plt.title('Performance of Different K-value on Precision, Recall and F1_score')
-    # plt.show()
+    plt.plot(range(1, 41), precision, color='blue', linestyle='dashed',
+             marker='o', markerfacecolor='red', label='presision')
+    plt.plot(range(1, 41), recall, color='blue', linestyle='dashed',
+             marker='o', markerfacecolor='green', label='recall')
+    plt.plot(range(1, 41), F1, color='blue', linestyle='dashed',
+             marker='o', markerfacecolor='yellow', label='f1_score')
+
+    plt.xlabel('k_value')
+    plt.ylabel('socre')
+    plt.legend(loc='best')
+    plt.title('Performance of Different K-value on Precision, Recall and F1_score')
+    plt.show()
 
     # k = np.argmax(test_score_list) + 1
     knn = KNeighborsClassifier(n_neighbors=27, weights='distance')
@@ -140,10 +144,14 @@ def mlp(X_train, X_test, y_train, y_test):
         precision.append(metrics.precision_score(y_test, y_pred))
         F1.append(metrics.f1_score(y_test, y_pred))
         print(metrics.classification_report(y_test, y_pred))
-    plt.plot(range(1, 31), score, label='accuracy_score')
-    plt.plot(range(1, 31), recall, label='recall_score')
-    plt.plot(range(1, 31), precision, label='precision_score')
-    plt.plot(range(1, 31), F1, label='f1_score')
+    plt.plot(range(1, 31), score, color='blue', linestyle='dashed',
+             marker='o', markerfacecolor='c', label='accuracy_score')
+    plt.plot(range(1, 31), precision, color='blue', linestyle='dashed',
+             marker='o', markerfacecolor='red', label='presision')
+    plt.plot(range(1, 31), recall, color='blue', linestyle='dashed',
+             marker='o', markerfacecolor='green', label='recall')
+    plt.plot(range(1, 31), F1, color='blue', linestyle='dashed',
+             marker='o', markerfacecolor='yellow', label='f1_score')
     plt.xlabel('layers')
     plt.ylabel('values')
     plt.legend(loc='best')
@@ -171,9 +179,12 @@ def rf(X_train, X_test, y_train, y_test):
         recall.append(metrics.recall_score(y_test, y_pred))
         precision.append(metrics.precision_score(y_test, y_pred))
         F1.append(metrics.f1_score(y_test, y_pred))
-    plt.plot(range(1, 21), recall, label='recall_score')
-    plt.plot(range(1, 21), precision, label='precision_score')
-    plt.plot(range(1, 21), F1, label='f1_score')
+    plt.plot(range(1, 21), precision, color='blue', linestyle='dashed',
+             marker='o', markerfacecolor='red', label='presision')
+    plt.plot(range(1, 21), recall, color='blue', linestyle='dashed',
+             marker='o', markerfacecolor='green', label='recall')
+    plt.plot(range(1, 21), F1, color='blue', linestyle='dashed',
+             marker='o', markerfacecolor='yellow', label='f1_score')
     plt.xlabel('value of min_sample_leaf')
     plt.ylabel('values')
     plt.legend(loc='best')
@@ -200,7 +211,7 @@ def dummy(X_train, X_test, y_train, y_test):
     y_pred = model.predict(X_test)
     # summarize prediction
     print(metrics.classification_report(y_test, y_pred))
-
+    return model
 
 def read_data(csv_file):
     df = pd.read_csv(csv_file)
@@ -423,7 +434,7 @@ def predict_post(pred_prop, pred):
 
 def plot_weighs(a):
     plt.plot(a[:, 0], a[:, 1], color='blue', linestyle='dashed',
-             marker='o', markerfacecolor='red', label='accuracy')
+             marker='o', markerfacecolor='red', label='presision')
     plt.plot(a[:, 0], a[:, 2], color='blue', linestyle='dashed',
              marker='o', markerfacecolor='green', label='recall')
     plt.plot(a[:, 0], a[:, 3], color='blue', linestyle='dashed',
@@ -487,19 +498,18 @@ if __name__ == '__main__':
 
     # convert class vectors to binary class matrices
     # y = keras.utils.to_categorical(y, num_classes)
-    print('rondom forest---------------------')
-    rf = rf(X_train, X_test, y_train, y_test)
+    # print('rondom forest---------------------')
+    # rf = rf(X_train, X_test, y_train, y_test)
+    #
+    # print('KNN---------------------')
+    # knn = knn(X_train, X_test, y_train, y_test)
 
-    print('KNN---------------------')
-    knn = knn(X_train, X_test, y_train, y_test)
-    
-    print('MLP---------------------')
-    mlp(X_train, X_test, y_train, y_test)
-    print('SVM---------------------')
-    svm = svm(X_train, X_test, y_train, y_test, {0: 1, 1: 2.45})
-    
     print('ANN---------------------')
-    mlp = mlp(X_train, X_test, y_train, y_test)
+    mlp(X_train, X_test, y_train, y_test)
+    # print('SVM---------------------')
+    # svm = svm(X_train, X_test, y_train, y_test, {0: 1, 1: 2.45})
+
+
     print('DUMMY---------------------')
     dummy = dummy(X_train, X_test, y_train, y_test)
 
@@ -529,7 +539,12 @@ if __name__ == '__main__':
 
     roc.suptitle("Model ROC Curves", y=1.045, weight='bold', size=18)
 
-    roc.savefig('../results/1.png', dpi=400, bbox_inches='tight')
+    roc.savefig('../results/roc.png', dpi=400, bbox_inches='tight')
+
+    fpr, tpr, pos_prob = roc_curve(dummy, X_test, y_test)
+    plt.plot(fpr, tpr)
+    plt.title("Dummy: %.2f" % metrics.roc_auc_score(y_test, pos_prob), size=15, x=.485, ha='center')
+    plt.show()
 
     proba1 = svm.predict_proba(X_test)
     print("Log loss: %.3f" % metrics.log_loss(y_test, proba1))
@@ -542,3 +557,7 @@ if __name__ == '__main__':
 
     proba4 = mlp.predict_proba(X_test)
     print("Log loss: %.3f" % metrics.log_loss(y_test, proba4))
+
+    proba5 = dummy.predict_proba(X_test)
+    print("Log loss: %.3f" % metrics.log_loss(y_test, proba5))
+
