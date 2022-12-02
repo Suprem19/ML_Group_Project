@@ -302,7 +302,7 @@ def plt_pred_summary():
     ind = np.arange(N) 
     width = 0.1
       
-   
+    plt.figure(dpi=200, figsize=(10,6))
     bar1 = plt.bar(ind, SVC, width, color = 'r')  
     bar2 = plt.bar(ind+width, KNN, width, color='g')   
     bar3 = plt.bar(ind+width*2, RF, width, color = 'b')
