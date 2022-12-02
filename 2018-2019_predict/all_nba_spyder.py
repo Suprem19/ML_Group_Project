@@ -12,8 +12,8 @@ starting_year = 2021
 
 header_award_list = ['all-nba_1', 'all-nba_2', 'all-nba_3', 'all-defensive_1', 'all-defensive_2', 'all-rookie_1', 'all-rookie_2', 'all_star_game_rosters_1', 'all_star_game_rosters_2']
  
-mode = 'per_game'
-# mode = 'advanced'
+# mode = 'per_game'
+mode = 'advanced'
 
 header_per_game = ['Year','Player','Pos','Age','Tm','G','GS','MP','FG','FGA','FG%','3P','3PA','3P%','2P','2PA','2P%','eFG%','FT','FTA','FT%','ORB','DRB','TRB','AST','STL','BLK','TOV','PF','PTS']
 header_shooting = ['Year', 'Player', 'Pos', 'Age', 'Tm', 'G', 'MP', 'FG%', 'Dist.', '2P', '0-3', '3-10', '10-16', '16-3P', '3P', '2P', '0-3', '3-10', '10-16', '16-3P', '3P', '2P', '3P', '%FGA', '#', '%3PA', '3P%', 'Att.', '#']

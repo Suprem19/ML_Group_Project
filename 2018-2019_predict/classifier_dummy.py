@@ -91,7 +91,11 @@ def knn(X_train, X_test, y_train, y_test):
         y_pred = knn.predict(X_test)
         
         print('------------k nearest: ', i)
-        print(metrics.classification_report(y_test, y_pred))
+        m = metrics.classification_report(y_test, y_pred)
+        print(m)
+    
+        f1_score = metrics.f1_score(y_test, y_pred)
+        print(f1_score)
         # metrics.f1_score(y_test,y_pred)    
 
 def mlp(X_train, X_test, y_train, y_test):
@@ -163,24 +167,38 @@ def read_data(csv_file):
     y = df.iloc[:,features['class']]
     return X,y
 
-def svm(X_train, X_test, y_train, y_test):
+class_weights_enabled = 1
+threshold_svm_enabled = 1
+norm_svm_enabled = 1
+
+def svm(X_train, X_test, y_train, y_test, class_weight={0:1, 1:5}):
     import matplotlib.pyplot as plt
     from sklearn import svm
   
         # fit the model and get the separating hyperplane using weighted classes
-    wclf = svm.SVC(kernel="linear", probability=True, class_weight={0:1, 1:5})
+    if class_weights_enabled:
+        wclf = svm.SVC(kernel="linear", probability=True, class_weight=class_weight)
+    else:
+        wclf = svm.SVC(kernel="linear", probability=True)
     # wclf = svm.SVC(kernel="linear")
     wclf.fit(X_train, y_train)
     y_dec = wclf.decision_function(X_test)
     y_predic_prop= wclf.predict_proba(X_test)
     y_pred = wclf.predict(X_test)
     
- 
-    y_pred = (wclf.predict_proba(X_test)[:,1] >= 0.1148).astype(bool)
+    
+    if threshold_svm_enabled:
+        y_pred = (wclf.predict_proba(X_test)[:,1] >= 0.1284).astype(bool)
     # y_pred = predict_post(y_predic_prop, y_pred)
     
- 
-    print(metrics.classification_report(y_test, y_pred))
+    m = metrics.classification_report(y_test, y_pred)
+    print(m)
+    precicion_score = metrics.precision_score(y_test, y_pred)
+    recall_score = metrics.recall_score(y_test, y_pred)
+    f1_score = metrics.f1_score(y_test, y_pred)
+    print(f1_score)
+    return (precicion_score, recall_score, f1_score)
+    
 
 def norm(X):
     import pandas as pd
@@ -234,7 +252,7 @@ def thres_hold_choose(X_train, X_test, y_train, y_test):
     from sklearn.metrics import precision_recall_curve   # Calculate the Precision-Recall curve
     from sklearn import svm
     # Fit the model
-    wclf = svm.SVC(kernel="linear", probability=True, class_weight={0:1, 1:5})
+    wclf = svm.SVC(kernel="linear", probability=True, class_weight={0:1, 1:2.45})
     wclf.fit(X_train, y_train)
     # Predict the probabilities
     y_pred = wclf.predict_proba(X_test)
@@ -334,7 +352,34 @@ def predict_post(pred_prop, pred):
     select_3(pred_list,'SG', pred_refined)
     return pred_refined
     
+
+def plot_weighs(a):
+    plt.plot(a[:,0], a[:,1],  color='blue', linestyle='dashed', 
+         marker='o',markerfacecolor='red', label = 'accuracy')
+    plt.plot(a[:,0], a[:,2], color='blue', linestyle='dashed', 
+             marker='o',markerfacecolor='green', label = 'recall')
+    plt.plot(a[:,0], a[:,3], color='blue', linestyle='dashed', 
+             marker='o',markerfacecolor='yellow', label = 'f1_score')
     
+    
+    plt.legend(loc = 'lower left')
+    plt.xlabel('Weights of class1 (all-naba)')
+    plt.ylabel('Scores')
+    plt.title('Scores for different value of class_weight')
+    plt.show()
+
+def svm_weight_try(X_train, X_test, y_train, y_test):
+    weights =np.linspace(2.0, 5.0, num=20, endpoint=False)
+    print('SVM---------------------')
+    weights_info = []
+    for w in weights:
+        print('weights is: ' ,w)
+        (precicion_score, recall_score, f1_score) = svm(X_train, X_test, y_train, y_test, {0:1, 1:w})
+        weights_info.append([w, precicion_score, recall_score, f1_score])
+
+    
+    weights_np = np.array(weights_info)
+    print(weights_np)
         
 if __name__ == '__main__':
     
@@ -345,10 +390,11 @@ if __name__ == '__main__':
     X_train, y_train = read_data(csv_filename_train)
     X_test, y_test = read_data(csv_filename_test)
     
-# must do norm for svm, otherwise program stuck, why?
-    X_train = norm(X_train)
-    X_test = norm(X_test)
-    
+    if norm_svm_enabled:
+    # must do norm for svm, otherwise program stuck, why?
+        X_train = norm(X_train)
+        X_test = norm(X_test)
+        
     # X_train, X_test = pca(X_train, X_test)
     
     reduce_class(y_train)
@@ -371,11 +417,10 @@ if __name__ == '__main__':
     knn(X_train, X_test, y_train, y_test)
   
     # print('MLP---------------------')
-    mlp(X_train, X_test, y_train, y_test)
-    
+    # mlp(X_train, X_test, y_train, y_test)
     print('SVM---------------------')
-    svm(X_train, X_test, y_train, y_test)
-    
+    svm(X_train, X_test, y_train, y_test, {0:1, 1:2.45})
+
 
 
    
