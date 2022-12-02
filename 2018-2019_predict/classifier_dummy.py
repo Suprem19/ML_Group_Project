@@ -168,7 +168,7 @@ def read_data(csv_file):
     return X,y
 
 class_weights_enabled = 1
-threshold_svm_enabled = 1
+threshold_svm_enabled = 0
 norm_svm_enabled = 1
 
 def svm(X_train, X_test, y_train, y_test, class_weight={0:1, 1:5}):
@@ -193,6 +193,7 @@ def svm(X_train, X_test, y_train, y_test, class_weight={0:1, 1:5}):
     
     m = metrics.classification_report(y_test, y_pred)
     print(m)
+    # plt_cm(y_test, y_pred, 'SVM classifier')
     precicion_score = metrics.precision_score(y_test, y_pred)
     recall_score = metrics.recall_score(y_test, y_pred)
     f1_score = metrics.f1_score(y_test, y_pred)
@@ -362,14 +363,14 @@ def plot_weighs(a):
              marker='o',markerfacecolor='yellow', label = 'f1_score')
     
     
-    plt.legend(loc = 'lower left')
+    plt.legend(loc = 'upper left')
     plt.xlabel('Weights of class1 (all-naba)')
     plt.ylabel('Scores')
     plt.title('Scores for different value of class_weight')
     plt.show()
 
 def svm_weight_try(X_train, X_test, y_train, y_test):
-    weights =np.linspace(2.0, 5.0, num=20, endpoint=False)
+    weights =np.linspace(1.0, 5.0, num=20, endpoint=False)
     print('SVM---------------------')
     weights_info = []
     for w in weights:
@@ -380,6 +381,21 @@ def svm_weight_try(X_train, X_test, y_train, y_test):
     
     weights_np = np.array(weights_info)
     print(weights_np)
+    return weights_np
+
+
+def plt_cm(y_true, y_predict, model_name, labels=[0,1]):
+    from sklearn.metrics import plot_confusion_matrix
+    from sklearn.metrics import confusion_matrix
+    from sklearn.metrics import ConfusionMatrixDisplay
+
+    cm = confusion_matrix(y_test, y_predict, labels=labels)
+    #print(est.classes_,type(est.classes_))
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+    disp.plot()
+    #disp.ax_.set_title("Add a nice title here after calling disp.plot()")
+    disp.ax_.set_title('Confusion Matrix of %s'%model_name)
+    plt.show()
         
 if __name__ == '__main__':
     
@@ -421,6 +437,7 @@ if __name__ == '__main__':
     print('SVM---------------------')
     svm(X_train, X_test, y_train, y_test, {0:1, 1:2.45})
 
+    plot_weighs(svm_weight_try(X_train, X_test, y_train, y_test))
 
 
    
